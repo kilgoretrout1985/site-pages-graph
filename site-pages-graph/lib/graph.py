@@ -5,7 +5,7 @@ class Graph(object):
     # graph stored in dict, like:
     # {
     #     # page: [pages, it, links, to],
-    #     '/': ['/news/smth-happened', '/about-us', '/today-news'],
+    #     '/': ['/today-news', '/about-us', '/news/smth-happened',],
     #     '/news/smth-happened': ['/', '/today-news'],
     #     '/about-us': ['/', '/small-plain-popup-page'],
     #     '/today-news': ['/news/smth-happened', '/'],
@@ -62,6 +62,26 @@ class Graph(object):
                     return extended_path
         return None
     
+    # g.find_all_paths("/", "/news/smth-happened")
+    # [ ['/', '/today-news', '/news/smth-happened'], ['/', '/news/smth-happened'] ]
+    def find_all_paths(self, start_node, end_node, path=[]):
+        if start_node not in self.__g:
+            return []
+
+        path = path + [start_node]
+        if start_node == end_node:
+            return [path]
+        
+        paths = []
+        for node in self.__g[start_node]:
+            if node not in path:
+                extended_paths = self.find_all_paths(node, end_node, path)
+                for p in extended_paths:
+                    paths.append(p)
+        return paths
+
+    # g.find_shortest_path("/", "/news/smth-happened")
+    # ['/', '/news/smth-happened']
     def find_shortest_path(self, start_node, end_node, path=None):
         if start_node not in self.__g:
             return None
@@ -83,8 +103,8 @@ class Graph(object):
 
     def __str__(self):
         s = "Nodes:\n"
-        for k in self.__g:
-            s += "\t" + str(k) + "\n"
+        for node in self.__g:
+            s += "\t" + str(node) + "\n"
         s += "\nEdges:\n"
         for edge in self.edges():
             s += "\t" + str(edge) + "\n"
