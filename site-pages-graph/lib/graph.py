@@ -60,8 +60,26 @@ class Graph(object):
                 extended_path = self.find_path(node, end_node, path)
                 if extended_path:
                     return extended_path
-        
         return None
+    
+    def find_shortest_path(self, start_node, end_node, path=None):
+        if start_node not in self.__g:
+            return None
+        
+        if not path:
+            path = []
+        path = path + [start_node]
+        if start_node == end_node:
+            return path
+        
+        shortest = None
+        for node in self.__g[start_node]:
+            if node not in path:
+                newpath = self.find_shortest_path(node, end_node, path)
+                if newpath:
+                    if not shortest or len(newpath) < len(shortest):
+                        shortest = newpath
+        return shortest
 
     def __str__(self):
         s = "Nodes:\n"
