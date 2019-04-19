@@ -2,7 +2,7 @@ import sys
 from urllib.request import Request, urlopen
 
 from lib.graph import Graph
-from lib.helpers import find_links, normalize_links, filter_links
+from lib.link_helpers import find_links, normalize_links, filter_links
 
 
 def get_undone(todo: dict) -> str:
