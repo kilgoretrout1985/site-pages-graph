@@ -1,6 +1,8 @@
+import pickle
+
+
 # https://www.python-course.eu/graphs_python.php
 # https://www.python.org/doc/essays/graphs/
-
 class Graph(object):
     # graph stored in dict, like:
     # {
@@ -17,6 +19,16 @@ class Graph(object):
         if not graph_dict:
             graph_dict = {}
         self.__g = graph_dict
+
+    def save_to_file(self, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(self.__g, f)
+    
+    @classmethod
+    def load_from_file(cls, filename):
+        with open(filename, 'rb') as f:
+            data = pickle.load(f)
+        return cls(data)
 
     def nodes(self):
         return list(self.__g.keys())
