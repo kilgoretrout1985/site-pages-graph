@@ -16,13 +16,21 @@ def find_links(html: str) -> list:
 
 
 def normalize_links(links: list, base_url: str) -> list:
-    for i in range(len(links)):
+    normalized_links = []
+    for link in links:
         # relative links to absolute
-        if not re.match(r'https?\:\/\/', links[i], flags=re.I):
-            links[i] = url.parse(base_url).relative(links[i])
+        if not re.match(r'https?\:\/\/', link, flags=re.I):
+            try:
+                link = url.parse(base_url).relative(link)
+            except ValueError:
+                continue
         # normalize link and remove #anchor
-        links[i] = str(url.parse(links[i]).defrag().abspath())
-    return links
+        try:
+            link = str(url.parse(link).defrag().abspath())
+        except ValueError:
+            continue
+        normalized_links.append(link)
+    return normalized_links
 
 
 def filter_links(links: list, base_url: str) -> list:
