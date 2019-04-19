@@ -25,6 +25,7 @@ class Graph(object):
         edges = []
         for node in self.__g:
             for neighbour in self.__g[node]:
+                # TODO: sets are unordered, edge direction may be broken
                 if set((neighbour, node)) not in edges:
                     edges.append( set((node, neighbour)) )
         return edges
@@ -33,13 +34,10 @@ class Graph(object):
         if node not in self.__g:
             self.__g[node] = []
 
-    def add_edge(self, edge):
-        edge = set(edge)
-        (node1, node2) = tuple(edge)
-        if node1 in self.__g:
-            self.__g[node1].append(node2)
-        else:
-            self.__g[node1] = [node2]
+    def add_edge(self, from_node, to_node):
+        self.add_node(from_node)
+        self.add_node(to_node)
+        self.__g[from_node].append(to_node)
     
     # g.find_path("/", "/small-plain-popup-page")
     # ['/', '/about-us', '/small-plain-popup-page']
