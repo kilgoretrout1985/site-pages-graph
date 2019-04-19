@@ -37,7 +37,8 @@ class Graph(object):
     def add_edge(self, from_node, to_node):
         self.add_node(from_node)
         self.add_node(to_node)
-        self.__g[from_node].append(to_node)
+        if to_node not in self.__g[from_node]:
+            self.__g[from_node].append(to_node)
     
     # g.find_path("/", "/small-plain-popup-page")
     # ['/', '/about-us', '/small-plain-popup-page']
