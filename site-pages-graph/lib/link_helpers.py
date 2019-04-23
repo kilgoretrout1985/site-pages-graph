@@ -33,14 +33,19 @@ def normalize_links(links: list, base_url: str) -> list:
     return normalized_links
 
 
-def filter_links(links: list, base_url: str) -> list:
+def is_internal_link(link: str, base_url: str) -> bool:
     base_host = re.sub(r'^www\.', '', urlparse(base_url).netloc, flags=re.I) 
     base_host = re.escape(base_host)
-    
+    if re.match(r'https?\:\/\/(?:www\.)?' + base_host, link, flags=re.I):
+        return True
+    return False
+
+
+def filter_links(links: list, base_url: str) -> list:
     links = list(set(links))
     filtered_links = []
     for link in links:
         # filter mailto: javascript: and external links
-        if re.match(r'https?\:\/\/(?:www\.)?' + base_host, link, flags=re.I):
+        if is_internal_link(link, base_url):
             filtered_links.append(link)
     return filtered_links

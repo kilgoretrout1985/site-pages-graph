@@ -6,7 +6,8 @@ import url
 import requests
 
 from lib.graph import Graph
-from lib.link_helpers import find_links, normalize_links, filter_links
+from lib.link_helpers import find_links, normalize_links, filter_links, \
+                             is_internal_link
 
 
 if __name__ == '__main__':
@@ -31,14 +32,24 @@ if __name__ == '__main__':
         
         try:
             response = requests.get(current_url, timeout=5)
+            
             if response.status_code > 499:
                 response.raise_for_status()
             
-            print("Received %s" % current_url)
+            # check for redirect
+            redirect_to = None
+            redirect_status = None
+            if response.history \
+            and response.history[0].status_code in (301, 302):
+                redirect_to = response.url
+                redirect_status = response.history[0].status_code
+            
             done_urls[current_url] = {
-                'status': response.status_code,
-                'redirects_to': None,
+                'status': redirect_status if redirect_status is not None \
+                                else response.status_code,
+                'redirect_to': redirect_to,
             }
+            print("Received %s" % current_url)
         except IOError as e:
             current_url_errors += 1
             if current_url_errors < 5:
@@ -48,7 +59,7 @@ if __name__ == '__main__':
                 # write error info
                 done_urls[current_url] = {
                     'status': response.status_code,
-                    'redirects_to': None,
+                    'redirect_to': None,
                 }
             print("Error at %s: %s" % (current_url, str(e)))
             continue
@@ -58,7 +69,11 @@ if __name__ == '__main__':
 
         links = find_links(response.text)
         links = normalize_links(links, current_url)
-        links = filter_links(links, current_url)        
+        links = filter_links(links, current_url)
+        # add redirect to crawl and count it as a linked page from current page
+        if redirect_to is not None \
+        and is_internal_link(redirect_to, current_url):
+            links.append(redirect_to)
 
         for link in links:
             # add newly discovered for the job
@@ -66,6 +81,7 @@ if __name__ == '__main__':
                 todo_urls.append((link, 0,))
             # add to graph
             graph.add_edge(current_url, link)
+
 
     # prepare the results and write them
     host = url.parse(start_url).host
@@ -92,6 +108,7 @@ if __name__ == '__main__':
         c += 1
         if (c % 10) == 0:
             print(".", sep='', end='', flush=True)
+    print()
     
     # write csv
     csv_file = os.path.join(out_d, host+'.csv')
@@ -101,7 +118,7 @@ if __name__ == '__main__':
             'url',
             'status',
             'clicks from /',
-            'internal links to this url',
+            'internal links to url',
             'url redirects to'
         ])
         for url in done_urls:
@@ -113,5 +130,3 @@ if __name__ == '__main__':
                 ''
             ])
     print("Saved csv table to %s" % csv_file)
-
-
