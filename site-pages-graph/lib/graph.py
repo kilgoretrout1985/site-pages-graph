@@ -7,11 +7,11 @@ class Graph(object):
     # graph stored in dict, like:
     # {
     #     # page: [pages, it, links, to],
-    #     '/': ['/today-news', '/about-us', '/news/smth-happened',],
-    #     '/news/smth-happened': ['/', '/today-news'],
-    #     '/about-us': ['/', '/small-plain-popup-page'],
-    #     '/today-news': ['/news/smth-happened', '/'],
-    #     '/small-plain-popup-page': [],  # page has no links
+    #     '/': set(['/today-news', '/about-us', '/news/smth-happened',]),
+    #     '/news/smth-happened': set(['/', '/today-news']),
+    #     '/about-us': set(['/', '/small-plain-popup-page']),
+    #     '/today-news': set(['/news/smth-happened', '/']),
+    #     '/small-plain-popup-page': set(),  # page has no links
     # }
     __g = None 
 
@@ -44,73 +44,32 @@ class Graph(object):
 
     def add_node(self, node):
         if node not in self.__g:
-            self.__g[node] = []
+            self.__g[node] = set()
 
     def add_edge(self, from_node, to_node):
         self.add_node(from_node)
         self.add_node(to_node)
-        if to_node not in self.__g[from_node]:
-            self.__g[from_node].append(to_node)
+        self.__g[from_node].add(to_node)
     
-    # g.find_path("/", "/small-plain-popup-page")
-    # ['/', '/about-us', '/small-plain-popup-page']
-    # g.find_path("/small-plain-popup-page", "/")
-    # None
-    def find_path(self, start_node, end_node, path=None):
-        if start_node not in self.__g:
-            return None
-
-        if not path:
-            path = []
-        path = path + [start_node]
+    # https://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
+    # https://stackoverflow.com/questions/3601180/calculate-distance-between-2-nodes-in-a-graph
+    def find_all_paths(self, start_node, end_node):
         if start_node == end_node:
-            return path
-
-        for node in self.__g[start_node]:
-            if node not in path:
-                extended_path = self.find_path(node, end_node, path)
-                if extended_path:
-                    return extended_path
-        return None
+            yield [start_node]
+        queue = [(start_node, [start_node])]
+        while queue:
+            (node, path) = queue.pop(0)
+            for next in self.__g[node] - set(path):
+                if next == end_node:
+                    yield path + [next]
+                else:
+                    queue.append((next, path + [next]))
     
-    # g.find_all_paths("/", "/news/smth-happened")
-    # [ ['/', '/today-news', '/news/smth-happened'], ['/', '/news/smth-happened'] ]
-    def find_all_paths(self, start_node, end_node, path=[]):
-        if start_node not in self.__g:
-            return []
-
-        path = path + [start_node]
-        if start_node == end_node:
-            return [path]
-        
-        paths = []
-        for node in self.__g[start_node]:
-            if node not in path:
-                extended_paths = self.find_all_paths(node, end_node, path)
-                for p in extended_paths:
-                    paths.append(p)
-        return paths
-
-    # g.find_shortest_path("/", "/news/smth-happened")
-    # ['/', '/news/smth-happened']
-    def find_shortest_path(self, start_node, end_node, path=None):
-        if start_node not in self.__g:
+    def find_shortest_path(self, start_node, end_node):
+        try:
+            return next(self.find_all_paths(start_node, end_node))
+        except StopIteration:
             return None
-        
-        if not path:
-            path = []
-        path = path + [start_node]
-        if start_node == end_node:
-            return path
-        
-        shortest = None
-        for node in self.__g[start_node]:
-            if node not in path:
-                newpath = self.find_shortest_path(node, end_node, path)
-                if newpath:
-                    if not shortest or len(newpath) < len(shortest):
-                        shortest = newpath
-        return shortest
 
     def __str__(self):
         s = "Nodes:\n"
