@@ -128,6 +128,6 @@ if __name__ == '__main__':
                 done_urls[url]['status'],
                 done_urls[url]['clicks'],
                 done_urls[url]['internal_links'],
-                ''
+                done_urls[url]['redirect_to'],
             ])
     print("Saved csv table to %s" % csv_file)
