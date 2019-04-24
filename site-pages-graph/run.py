@@ -90,6 +90,7 @@ if __name__ == '__main__':
     # save graph
     graph_file = os.path.join(out_d, host+'.pickle')
     graph.save_to_file(graph_file)
+    print()
     print("Graph saved to %s" % graph_file)
 
     # compute clicks from graph one time for csv and sqlite
