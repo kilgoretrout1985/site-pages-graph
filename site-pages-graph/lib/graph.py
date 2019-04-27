@@ -48,8 +48,10 @@ class Graph(object):
 
     def add_edge(self, from_node, to_node):
         self.add_node(from_node)
-        self.add_node(to_node)
-        self.g[from_node].add(to_node)
+        # self-links do not count (they are useless to us)
+        if from_node != to_node:
+            self.add_node(to_node)
+            self.g[from_node].add(to_node)
     
     # https://eddmann.com/posts/depth-first-search-and-breadth-first-search-in-python/
     # https://stackoverflow.com/questions/3601180/calculate-distance-between-2-nodes-in-a-graph
