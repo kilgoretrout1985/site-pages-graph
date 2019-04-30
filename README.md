@@ -13,7 +13,7 @@ with pages.
 
 Clicks from / and internal links will help you modify structure of the site 
 as the most important to you pages should have more internal links and should 
-have less clicks from homepage. Definitely less than 5, and this is a problem 
+have less clicks from homepage. Definitely less than 5 clicks, and this is a problem 
 sometimes for big content websites.
 
 ## Install
