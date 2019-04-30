@@ -11,7 +11,7 @@ from lib.link_helpers import find_links, normalize_links, filter_links, \
                              is_internal_link
 
 
-MAX_THREADS = 20
+MAX_THREADS = 15
 
 
 def get_url(url: str) -> requests.Response:
