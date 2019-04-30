@@ -22,6 +22,29 @@ def get_url(url: str) -> requests.Response:
         return (url, None, e)
 
 
+def find_redirect(response: requests.Response) -> tuple:
+    redirect_to = None
+    redirect_status = None
+    if response.history \
+    and response.history[0].status_code in (301, 302):
+        redirect_to = response.url
+        redirect_status = response.history[0].status_code
+    return (redirect_to, redirect_status)
+
+
+def parse_links(response: requests.Response, url: str) -> list:
+    links = find_links(response.text)
+    links = normalize_links(links, url)
+    links = filter_links(links, url)
+    
+    # add redirect to crawl and count it as a linked page from current page
+    redirect_to = find_redirect(response)[0]
+    if redirect_to is not None and is_internal_link(redirect_to, url):
+        links.append(redirect_to)
+    
+    return links
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2 or sys.argv[1] == '--help':
         print("Run this file with site root url like:")
@@ -46,18 +69,10 @@ if __name__ == '__main__':
             try:
                 if exc is not None:
                     raise exc
-                
                 if response.status_code > 499:
                     response.raise_for_status()
                 
-                # check for redirect
-                redirect_to = None
-                redirect_status = None
-                if response.history \
-                and response.history[0].status_code in (301, 302):
-                    redirect_to = response.url
-                    redirect_status = response.history[0].status_code
-                
+                redirect_to, redirect_status = find_redirect(response)
                 # write data
                 done_urls[current_url] = {
                     'status': redirect_status if redirect_status is not None \
@@ -70,8 +85,8 @@ if __name__ == '__main__':
             except Exception as e:
                 # value of a dict is number of tries to get the url
                 todo_urls[current_url] += 1
-                if todo_urls[current_url] > 5:  # stop trying
-                    # write error info
+                # stop trying and write error info
+                if todo_urls[current_url] > 5:
                     try:
                         status = response.status_code
                     except AttributeError:  # response can be None
@@ -87,14 +102,7 @@ if __name__ == '__main__':
             # every page (even with no links to others) is a node in a graph
             graph.add_node(current_url)
 
-            links = find_links(response.text)
-            links = normalize_links(links, current_url)
-            links = filter_links(links, current_url)
-            # add redirect to crawl and count it as a linked page from current page
-            if redirect_to is not None \
-            and is_internal_link(redirect_to, current_url):
-                links.append(redirect_to)
-
+            links = parse_links(response, current_url)
             for link in links:
                 # add newly discovered for the job
                 if link not in done_urls:
