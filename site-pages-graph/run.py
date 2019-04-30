@@ -13,7 +13,7 @@ from lib.link_helpers import find_links, normalize_links, filter_links, \
                              is_internal_link
 
 
-def get_url(url: str, timeout: int = 30) -> requests.Response:
+def get_url(url: str, timeout: int = 30) -> tuple:
     try:
         response = requests.get(url, timeout=timeout)
         return (url, response, None)
