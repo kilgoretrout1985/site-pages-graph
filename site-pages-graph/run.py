@@ -5,8 +5,8 @@ import concurrent.futures
 
 import url
 import requests
+import networkx as nx
 
-from lib.graph import Graph
 from lib.link_helpers import find_links, normalize_links, filter_links, \
                              is_internal_link
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         print("python3 %s https://mysite.com/" % sys.argv[0])
         sys.exit(0)
 
-    graph = Graph({})
+    graph = nx.DiGraph()
     start_url = str(url.parse( sys.argv[1] ).defrag().abspath())  # start url /
     todo_urls = { start_url: 0, }  # dict { url: error_count }
     done_urls = {}  # save info about processed urls here
@@ -107,27 +107,24 @@ if __name__ == '__main__':
     host = url.parse(start_url).host
     out_d = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
 
-    # save graph
-    graph_file = os.path.join(out_d, host+'.pickle')
-    graph.save_to_file(graph_file)
-    print()
-    print("Graph saved to %s" % graph_file)
-
     # compute clicks from graph one time for csv and sqlite
     print("Working with graph. This can be slow. Wait for a while.")
     c = 0
     for url in done_urls:
         # clicks to this page from homepage
-        done_urls[url]['clicks'] = len(graph.find_shortest_path(start_url, url)) - 1
+        done_urls[url]['clicks'] = nx.algorithms.shortest_path_length(
+                                        graph, source=start_url, target=url)
+        
         # internal link to this page from other pages
         internal_links = 0
-        for node in graph.g:
-            if node != url and url in graph.g[node]:
+        for node in graph:
+            if node != url and url in graph[node]:
                 internal_links += 1
         done_urls[url]['internal_links'] = internal_links
+        
         # print to show work is going
         c += 1
-        if (c % 10) == 0:
+        if (c % 3) == 0:
             print(".", sep='', end='', flush=True)
     print()
     
