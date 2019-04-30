@@ -3,7 +3,7 @@ import os.path
 import csv
 import concurrent.futures
 
-import url
+import url as mozurl
 import requests
 import networkx as nx
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     graph = nx.DiGraph()
-    start_url = str(url.parse( sys.argv[1] ).defrag().abspath())  # start url /
+    start_url = str(mozurl.parse( sys.argv[1] ).defrag().abspath())  # start url /
     todo_urls = { start_url: 0, }  # dict { url: error_count }
     done_urls = {}  # save info about processed urls here
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
 
     # prepare the results and write them
-    host = url.parse(start_url).host
+    host = mozurl.parse(start_url).host
     out_d = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
 
     # compute clicks from graph one time for csv and sqlite

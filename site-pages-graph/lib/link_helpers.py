@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
-import url
+import url as mozurl
 
 
 def find_links(html: str) -> list:
@@ -21,12 +21,12 @@ def normalize_links(links: list, base_url: str) -> list:
         # relative links to absolute
         if not re.match(r'https?\:\/\/', link, flags=re.I):
             try:
-                link = url.parse(base_url).relative(link)
+                link = mozurl.parse(base_url).relative(link)
             except ValueError:
                 continue
         # normalize link and remove #anchor
         try:
-            link = str(url.parse(link).defrag().abspath())
+            link = str(mozurl.parse(link).defrag().abspath())
         except ValueError:
             continue
         normalized_links.append(link)
