@@ -34,8 +34,3 @@ python3 run.py https://mysite.com/
 ```
 
 Then open output CSV to see the results.
-
-### Settings
-
-There is a `MAX_THREADS = 15` variable at the head of `run.py` file. Increase 
-it to make parsing faster or decrease to lower the load on your website.

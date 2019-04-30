@@ -2,21 +2,20 @@ import sys
 import os.path
 import csv
 import concurrent.futures
+from itertools import repeat
 
 import url as mozurl
 import requests
 import networkx as nx
 
+from settings import MAX_THREADS, NETWORK_TIMEOUT
 from lib.link_helpers import find_links, normalize_links, filter_links, \
                              is_internal_link
 
 
-MAX_THREADS = 15
-
-
-def get_url(url: str) -> requests.Response:
+def get_url(url: str, timeout: int = 30) -> requests.Response:
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=timeout)
         return (url, response, None)
     except Exception as e:
         return (url, None, e)
@@ -63,7 +62,11 @@ if __name__ == '__main__':
 
         threads_count = min(MAX_THREADS, len(urls))
         with concurrent.futures.ThreadPoolExecutor(threads_count) as executor:
-            results = list(executor.map(get_url, urls))
+            results = list(executor.map(
+                get_url, 
+                urls, 
+                repeat(NETWORK_TIMEOUT, times=len(urls))
+            ))
 
         for current_url, response, exc in results:
             try:
