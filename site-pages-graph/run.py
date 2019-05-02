@@ -8,7 +8,7 @@ import requests
 import networkx as nx
 
 from settings import MAX_THREADS, NETWORK_TIMEOUT
-from lib.output import write_csv
+from lib.output import write_csv, write_sqlite
 from lib.link_helpers import find_links, normalize_links, filter_links, \
                              is_internal_link
 
@@ -114,10 +114,6 @@ if __name__ == '__main__':
                 graph.add_edge(current_url, link)
 
 
-    # prepare the results and write them
-    host = mozurl.parse(start_url).host
-    out_d = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
-
     # compute clicks from graph one time for csv and sqlite
     print("Working with graph. This can be slow. Wait for a while.")
     c = 0
@@ -139,7 +135,14 @@ if __name__ == '__main__':
             print(".", sep='', end='', flush=True)
     print()
     
-    # write csv
+    # prepare the results and write them
+    host = mozurl.parse(start_url).host
+    out_d = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
+
+    # write reports
     csv_file = os.path.join(out_d, host+'.csv')
     write_csv(csv_file, done_urls)
     print("Saved csv table to %s" % csv_file)
+    sqlite_file = os.path.join(out_d, host+'.sqlite3')
+    write_sqlite(sqlite_file, done_urls)
+    print("Saved sqlite db to %s" % sqlite_file)

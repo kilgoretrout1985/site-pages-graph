@@ -33,4 +33,9 @@ cd site-pages-graph/
 python3 run.py https://mysite.com/
 ```
 
-Then open output CSV to see the results.
+Script generates 2 report options, both containg same data. Just choose the 
+one you are comfortable with: 
+
+* CSV file to open it in Excel for example,
+* SQLite database for [DB Browser](https://sqlitebrowser.org/) 
+  or something else you use for SQLite. 
