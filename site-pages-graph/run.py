@@ -1,6 +1,5 @@
 import sys
 import os.path
-import csv
 import concurrent.futures
 from itertools import repeat
 
@@ -9,6 +8,7 @@ import requests
 import networkx as nx
 
 from settings import MAX_THREADS, NETWORK_TIMEOUT
+from lib.output import write_csv
 from lib.link_helpers import find_links, normalize_links, filter_links, \
                              is_internal_link
 
@@ -141,21 +141,5 @@ if __name__ == '__main__':
     
     # write csv
     csv_file = os.path.join(out_d, host+'.csv')
-    with open(csv_file, mode='w') as csv_f:
-        csv_writer = csv.writer(csv_f)
-        csv_writer.writerow([
-            'url',
-            'status',
-            'clicks from /',
-            'internal links to url',
-            'url redirects to'
-        ])
-        for url in done_urls:
-            csv_writer.writerow([
-                url,
-                done_urls[url]['status'],
-                done_urls[url]['clicks'],
-                done_urls[url]['internal_links'],
-                done_urls[url]['redirect_to'],
-            ])
+    write_csv(csv_file, done_urls)
     print("Saved csv table to %s" % csv_file)
