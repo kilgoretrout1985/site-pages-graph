@@ -2,6 +2,7 @@ import sys
 import os.path
 import concurrent.futures
 from itertools import repeat
+from random import sample
 
 import url as mozurl
 import requests
@@ -56,16 +57,20 @@ if __name__ == '__main__':
     done_urls = {}  # save info about processed urls here
 
     while True:
-        urls = [x for x in todo_urls.keys() if x not in done_urls]
+        urls = [ x for x in todo_urls.keys() if x not in done_urls ]
         if not urls:
             break  # all done
 
         threads_count = min(MAX_THREADS, len(urls))
         with concurrent.futures.ThreadPoolExecutor(threads_count) as executor:
+            # Do not supply full urls list. Because it's size will grow on each
+            # iteration and it will erroneously look like executor has frozen.
+            # Also give website a short break while we parse responses.
+            threads_urls = sample(urls, min(threads_count*5, len(urls)))
             results = list(executor.map(
-                get_url, 
-                urls, 
-                repeat(NETWORK_TIMEOUT, times=len(urls))
+                get_url,
+                threads_urls,
+                repeat(NETWORK_TIMEOUT, times=len(threads_urls))
             ))
 
         for current_url, response, exc in results:
