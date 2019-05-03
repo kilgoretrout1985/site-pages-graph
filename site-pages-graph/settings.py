@@ -1,3 +1,3 @@
-MAX_THREADS = 10
+MAX_THREADS = 5
 # timeout in seconds for page load
-NETWORK_TIMEOUT = 5
+NETWORK_TIMEOUT = 10
