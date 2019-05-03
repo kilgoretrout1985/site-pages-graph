@@ -1,5 +1,4 @@
 import sys
-import os.path
 import concurrent.futures
 from itertools import repeat
 from random import sample
@@ -9,7 +8,7 @@ import requests
 import networkx as nx
 
 from settings import MAX_THREADS, NETWORK_TIMEOUT
-from lib.output import write_csv, write_sqlite
+from lib.output import output_filename, write_csv, write_sqlite
 from lib.link_helpers import find_links, normalize_links, filter_links, \
                              is_internal_link
 
@@ -36,13 +35,14 @@ def parse_links(response: requests.Response, url: str) -> list:
     links = find_links(response.text)
     links = normalize_links(links, url)
     links = filter_links(links, url)
-    
-    # add redirect to crawl and count it as a linked page from current page
-    redirect_to = find_redirect(response)[0]
-    if redirect_to is not None and is_internal_link(redirect_to, url):
-        links.append(redirect_to)
-    
     return links
+
+
+def add_redirect_link(redirect_url: str, url: str) -> list:
+    # add redirect to crawl and to count it as a linked page from current page
+    if is_internal_link(redirect_url, url):
+        return [ redirect_url, ]
+    return []
 
 
 if __name__ == '__main__':
@@ -110,7 +110,15 @@ if __name__ == '__main__':
             # every page (even with no links to others) is a node in a graph
             graph.add_node(current_url)
 
-            links = parse_links(response, current_url)
+            # If it was a redirect we do not parse links from response 
+            # because current_url may have wrong protocol for example.
+            # Only add the final redirect destination to future crawl if it 
+            # doesn't point to another site.
+            if redirect_to is not None:
+                links = add_redirect_link(redirect_to, current_url)
+            else:
+                links = parse_links(response, current_url)
+            
             for link in links:
                 # add newly discovered for the job
                 if link not in done_urls:
@@ -140,14 +148,10 @@ if __name__ == '__main__':
             print(".", sep='', end='', flush=True)
     print()
     
-    # prepare the results and write them
-    host = mozurl.parse(start_url).host
-    out_d = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
-
     # write reports
-    csv_file = os.path.join(out_d, host+'.csv')
+    csv_file = output_filename(start_url, __file__, 'csv')
     write_csv(csv_file, done_urls)
     print("Saved csv table to %s" % csv_file)
-    sqlite_file = os.path.join(out_d, host+'.sqlite3')
+    sqlite_file = output_filename(start_url, __file__, 'sqlite3')
     write_sqlite(sqlite_file, done_urls)
     print("Saved sqlite db to %s" % sqlite_file)
