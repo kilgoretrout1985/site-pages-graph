@@ -1,5 +1,17 @@
 import csv
 import sqlite3
+import os.path
+
+import url as mozurl
+
+
+def output_filename(url: str, main_file: str, extension: str) -> str:
+    host = mozurl.parse(url).host
+    return os.path.join(
+        os.path.dirname(os.path.abspath(main_file)), 
+        'output',
+        host + '.' + extension
+    )
 
 
 def write_csv(csv_file: str, done_urls: dict) -> None:
