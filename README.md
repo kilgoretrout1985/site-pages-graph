@@ -18,12 +18,14 @@ sometimes for big content websites.
 
 ## Install
 
+Copy this into terminal:
+
 ```
-git clone https://github.com/kilgoretrout1985/site-pages-graph.git
-cd site-pages-graph/
-python3 -m venv _env
-source _env/bin/activate
-pip3 install -r requirements.txt
+git clone https://github.com/kilgoretrout1985/site-pages-graph.git && \
+cd site-pages-graph/ && \
+python3 -m venv _env && \
+source _env/bin/activate && \
+pip3 install -r requirements.txt && \
 cd site-pages-graph/
 ```
 
