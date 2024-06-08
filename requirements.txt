@@ -1,5 +1,5 @@
 beautifulsoup4==4.7.1
 html5lib==1.0.1
 url==0.4.2
-requests==2.31.0
+requests==2.32.3
 networkx==3.1
